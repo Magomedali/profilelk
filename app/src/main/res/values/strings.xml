@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">profilelk</string>
+    <string name="action_settings">Settings</string>
+    <string name="input_login_hint">email/login</string>
+    <string name="submit_btn_value">Войти</string>
+    <string name="auth_form_title">Вход в личный кабинет !</string>
+</resources>

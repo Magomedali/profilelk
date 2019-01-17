@@ -1,10 +1,14 @@
 package ru.web_ali.profilelk.RestClient;
 
 import android.util.Log;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import okhttp3.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 public class RestClient {
     final String LOG_ID = "RestClient";
@@ -21,13 +25,38 @@ public class RestClient {
                 .build();
         try{
             Response response = client.newCall(request).execute();
-            String r =response.body().source().readString(Charset.forName("UTF-8"));
-            Log.i(LOG_ID,"response: "+ r);
-            return r;
+            String jsonResponse=response.body().source().readString(Charset.forName("UTF-8"));
+
+            if(!response.isSuccessful()){
+                Log.i(LOG_ID,"response is not successfully");
+                Log.i(LOG_ID,"response code is " + response.code());
+                return "";
+            }else{
+                Log.i(LOG_ID,"response is successfully");
+                Log.i(LOG_ID,"response code is " + response.code());
+            }
+
+            HashMap result = new ObjectMapper().readValue(jsonResponse,HashMap.class);
+
+            if(result.size() > 0 && result.containsKey("token") && result.containsKey("expired")){
+
+                String token = result.get("token").toString();
+                String expired_at = result.get("expired").toString();
+                Log.i(LOG_ID,"token: "+ token);
+                Log.i(LOG_ID,"expired_at: "+ expired_at);
+
+                return token;
+
+            }else{
+                Log.i(LOG_ID,"token not exists in the response: ");
+                Log.i(LOG_ID,"response: "+ result.toString());
+            }
+
+            return "";
+
         }catch (IOException e){
             return e.getMessage();
         }
-
 
     }
 

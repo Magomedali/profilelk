@@ -9,8 +9,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
-import ru.web_ali.profilelk.RestClient.AsyncRequest;
-import ru.web_ali.profilelk.RestClient.Request;
+
+import java.io.IOException;
+import ru.web_ali.profilelk.RestClient.RestClient;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -46,34 +47,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(LOG_ID,login_value);
         Log.d(LOG_ID,password_value);
 
-        //MyTask mt = new MyTask();
-        //mt.execute();
         new AsyncRequest().execute(login_value, password_value);
     }
 
 
-    class MyTask extends AsyncTask<Void, String, Request> {
+    class AsyncRequest extends AsyncTask<String, Integer, String> {
+
+
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            login.setText("Begin");
-        }
-
-        @Override
-        protected Request doInBackground(Void... params) {
-            return new ru.web_ali.profilelk.RestClient.Request("POST", "/auth", "login=web-ali@yandex.ru&password=12345qwE");
+        protected String doInBackground(String... arg) {
+            RestClient rcl = new RestClient();
+            String json = rcl.parametersAuthJson(arg[0], arg[1]);
+            try {
+                return rcl.auth(json);
+            }catch (IOException e){
+                Log.d(LOG_ID,"IOException");
+                return e.getMessage();
+            }
+            //return new ru.web_ali.profilelk.RestClient.Request("POST", "/auth", "login=web-ali@yandex.ru&password=12345qwE");
             //return new ru.web_ali.profilelk.RestClient.Request("GET", "/contacts", "");
         }
 
         @Override
-        protected void onPostExecute(Request result) {
+        protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            Log.d(LOG_ID,"Responce : ");
-            Log.d(LOG_ID,result.Content);
-            password.setText("End");
+            login.setText(result);
         }
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

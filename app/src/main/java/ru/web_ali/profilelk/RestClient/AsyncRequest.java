@@ -14,11 +14,7 @@ public class AsyncRequest extends AsyncTask<String, Integer, String> {
         RestClient rcl = new RestClient();
         String json = rcl.parametersAuthJson(arg[0], arg[1]);
         try {
-            Log.i(LOG_ID,"Execute request auth");
-            String resp = rcl.auth(json);
-            //String resp = rcl.contacts();
-            Log.i(LOG_ID,"Responce: "+resp);
-            return resp;
+            return rcl.auth(json);
         }catch (IOException e){
             Log.d(LOG_ID,"IOException");
             return e.getMessage();
@@ -27,6 +23,8 @@ public class AsyncRequest extends AsyncTask<String, Integer, String> {
 
     @Override
     protected void onPostExecute(String s) {
+
         super.onPostExecute(s);
+
     }
 }

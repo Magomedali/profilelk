@@ -2,6 +2,9 @@ package ru.web_ali.profilelk.RestClient;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.*;
@@ -31,13 +34,18 @@ public class RestClient {
                 Log.i(LOG_ID,"response is not successfully");
                 Log.i(LOG_ID,"response code is " + response.code());
                 return "";
-            }else{
-                Log.i(LOG_ID,"response is successfully");
-                Log.i(LOG_ID,"response code is " + response.code());
+            }
+
+            ObjectMapper converter = new ObjectMapper();
+
+            //JavaType js = converter.convertValue(jsonResponse,JavaType.class);
+            if(!this.checkJsonCompatibility(jsonResponse,HashMap.class)){
+                Log.i(LOG_ID,"response is not successfully");
+                Log.i(LOG_ID,"response can`t serialize");
+                return "";
             }
 
             HashMap result = new ObjectMapper().readValue(jsonResponse,HashMap.class);
-
             if(result.size() > 0 && result.containsKey("token") && result.containsKey("expired")){
 
                 String token = result.get("token").toString();
@@ -55,10 +63,28 @@ public class RestClient {
             return "";
 
         }catch (IOException e){
-            return e.getMessage();
+            String error = e.getMessage();
+            Log.i(LOG_ID,"token not exists in the response: ");
+            Log.i(LOG_ID,"exception: "+ error);
+            return "";
         }
 
     }
+
+
+    public boolean checkJsonCompatibility(String jsonStr, Class<?> valueType) throws JsonParseException, IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            mapper.readValue(jsonStr, valueType);
+            return true;
+        } catch (JsonMappingException e) {
+            return false;
+        }
+
+    }
+
 
     public String parametersAuthJson(String login, String password) {
         return "{"

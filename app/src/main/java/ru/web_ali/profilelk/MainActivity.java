@@ -1,5 +1,7 @@
 package ru.web_ali.profilelk;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,9 +11,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.io.IOException;
 import ru.web_ali.profilelk.RestClient.RestClient;
+
+import static android.content.SharedPreferences.*;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -20,13 +25,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button submitBtn;
     EditText login;
     EditText password;
+    TextView AuthStatusText;
+
+    SharedPreferences storage;
+    final String TOKEN = "token";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         submitBtn = (Button)findViewById(R.id.submit_btn);
-
+        AuthStatusText = (TextView) findViewById(R.id.AuthStatusText);
         submitBtn.setOnClickListener(this);
     }
 
@@ -53,7 +63,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     class AsyncRequest extends AsyncTask<String, Integer, String> {
 
-
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            submitBtn.setClickable(false);
+            AuthStatusText.setText("");
+        }
 
         @Override
         protected String doInBackground(String... arg) {
@@ -72,7 +87,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            login.setText(result);
+
+            storage = getSharedPreferences("MyStorage",MODE_PRIVATE);
+            Editor storageEditor = storage.edit();
+
+            if(!result.isEmpty()){
+                storageEditor.putString(TOKEN, result);
+
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivity(intent);
+            }else{
+                storageEditor.putString(TOKEN,"");
+                Log.d(LOG_ID,"Ошибка при авторизации!");
+                AuthStatusText.setText("Ошибка при авторизации!");
+            }
+            storageEditor.commit();
+            submitBtn.setClickable(true);
         }
     }
 
